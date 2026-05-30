@@ -1,0 +1,378 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  password   String
+  avatar     String?
+  role       UserRole  @default(MEMBER)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  memberships WorkspaceMembership[]
+  projectsLead Project[] @relation("projectLead")
+  reportedItems Item[] @relation("reportedBy")
+  assignedItems Item[] @relation("assignedTo")
+  comments    Comment[]
+  uploads     Attachment[] @relation("uploader")
+  worklogs    Worklog[]
+  notifications Notification[]
+  savedViews  SavedView[]
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ProjectType {
+  SCRUM
+  KANBAN
+}
+
+enum BoardType {
+  SCRUM
+  KANBAN
+  TABLE
+  TIMELINE
+  CALENDAR
+}
+
+enum ItemType {
+  EPIC
+  STORY
+  TASK
+  BUG
+  SUBTASK
+}
+
+enum Priority {
+  LOWEST
+  LOW
+  MEDIUM
+  HIGH
+  HIGHEST
+}
+
+enum SprintStatus {
+  FUTURE
+  ACTIVE
+  CLOSED
+}
+
+enum WorkflowCategory {
+  TODO
+  INPROGRESS
+  DONE
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  STATUS
+  PEOPLE
+  DATE
+  TIMELINE
+  DROPDOWN
+  TAGS
+  CHECKBOX
+  RATING
+  URL
+}
+
+enum VersionStatus {
+  UNRELEASED
+  RELEASED
+}
+
+enum ItemLinkType {
+  BLOCKS
+  IS_BLOCKED_BY
+  RELATES_TO
+  DUPLICATES
+  DEPENDS_ON
+}
+
+enum NotificationType {
+  ASSIGNED
+  MENTION
+  COMMENT
+  DUE_DATE
+  GENERIC
+}
+
+model Workspace {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memberships WorkspaceMembership[]
+  projects    Project[]
+}
+
+model WorkspaceMembership {
+  id          String    @id @default(uuid())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  role        UserRole  @default(MEMBER)
+
+  @@unique([workspaceId, userId])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  key         String
+  name        String
+  type        ProjectType
+  description String?
+  leadUser    User?     @relation("projectLead", fields: [leadUserId], references: [id])
+  leadUserId  String?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  boards        Board[]
+  sprints       Sprint[]
+  items         Item[]
+  workflowStatuses WorkflowStatus[]
+  labels        Label[]
+  components    Component[]
+  versions      Version[]
+  savedViews    SavedView[]
+
+  @@unique([workspaceId, key])
+}
+
+model Board {
+  id        String     @id @default(uuid())
+  project   Project    @relation(fields: [projectId], references: [id])
+  projectId String
+  name      String
+  type      BoardType
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  groups    Group[]
+  customFields CustomFieldDefinition[]
+  automations AutomationRule[]
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  board     Board    @relation(fields: [boardId], references: [id])
+  boardId   String
+  name      String
+  color     String?
+  sortOrder Int      @default(0)
+  items     Item[]
+}
+
+model Sprint {
+  id        String      @id @default(uuid())
+  project   Project     @relation(fields: [projectId], references: [id])
+  projectId String
+  name      String
+  goal      String?
+  startDate DateTime?
+  endDate   DateTime?
+  status    SprintStatus @default(FUTURE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     Item[]
+}
+
+model Item {
+  id           String      @id @default(uuid())
+  key          String      @unique
+  project      Project     @relation(fields: [projectId], references: [id])
+  projectId    String
+  type         ItemType
+  title        String
+  description  String?
+  status       String
+  priority     Priority    @default(MEDIUM)
+  assignee     User?       @relation("assignedTo", fields: [assigneeId], references: [id])
+  assigneeId   String?
+  reporter     User?       @relation("reportedBy", fields: [reporterId], references: [id])
+  reporterId   String?
+  storyPoints  Int?        @default(0)
+  dueDate      DateTime?
+  parent       Item?       @relation("itemParent", fields: [parentItemId], references: [id])
+  parentItemId String?
+  sprint       Sprint?     @relation(fields: [sprintId], references: [id])
+  sprintId     String?
+  group        Group?      @relation(fields: [groupId], references: [id])
+  groupId      String?
+  rank         Int?        @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  customFieldValues CustomFieldValue[]
+  labels             Label[]         @relation("itemLabels", references: [id])
+  linksAsSource      ItemLink[]      @relation("sourceLinks")
+  linksAsTarget      ItemLink[]      @relation("targetLinks")
+  comments           Comment[]
+  attachments        Attachment[]
+  worklogs           Worklog[]
+  activityLogs       ActivityLog[]
+}
+
+model WorkflowStatus {
+  id         String   @id @default(uuid())
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  String
+  name       String
+  category   WorkflowCategory
+  color      String?
+  sortOrder  Int      @default(0)
+}
+
+model CustomFieldDefinition {
+  id         String          @id @default(uuid())
+  board      Board           @relation(fields: [boardId], references: [id])
+  boardId    String
+  name       String
+  type       CustomFieldType
+  config     Json?
+  values     CustomFieldValue[]
+}
+
+model CustomFieldValue {
+  id                String                   @id @default(uuid())
+  item              Item                     @relation(fields: [itemId], references: [id])
+  itemId            String
+  fieldDefinition   CustomFieldDefinition    @relation(fields: [fieldDefinitionId], references: [id])
+  fieldDefinitionId String
+  value             Json
+}
+
+model Label {
+  id        String   @id @default(uuid())
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  name      String
+  color     String?
+  items     Item[]   @relation("itemLabels")
+}
+
+model Component {
+  id        String   @id @default(uuid())
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  name      String
+}
+
+model Version {
+  id          String        @id @default(uuid())
+  project     Project       @relation(fields: [projectId], references: [id])
+  projectId   String
+  name        String
+  status      VersionStatus @default(UNRELEASED)
+  releaseDate DateTime?
+}
+
+model ItemLink {
+  id             String         @id @default(uuid())
+  sourceItem     Item           @relation("sourceLinks", fields: [sourceItemId], references: [id])
+  sourceItemId   String
+  targetItem     Item           @relation("targetLinks", fields: [targetItemId], references: [id])
+  targetItemId   String
+  type           ItemLinkType
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  item       Item     @relation(fields: [itemId], references: [id])
+  itemId     String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  item       Item     @relation(fields: [itemId], references: [id])
+  itemId     String
+  filename   String
+  url        String
+  size       Int?
+  uploader   User     @relation("uploader", fields: [uploaderId], references: [id])
+  uploaderId String
+  createdAt  DateTime @default(now())
+}
+
+model Worklog {
+  id               String   @id @default(uuid())
+  item             Item     @relation(fields: [itemId], references: [id])
+  itemId           String
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  timeSpentMinutes Int
+  comment          String?
+  date             DateTime
+  createdAt        DateTime @default(now())
+}
+
+model AutomationRule {
+  id         String   @id @default(uuid())
+  board      Board    @relation(fields: [boardId], references: [id])
+  boardId    String
+  name       String
+  trigger    Json
+  conditions Json?
+  actions    Json
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  item       Item?    @relation(fields: [itemId], references: [id])
+  itemId     String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  projectId  String?
+  actor      User     @relation(fields: [actorId], references: [id])
+  actorId    String
+  action     String
+  oldValue   Json?
+  newValue   Json?
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  user       User             @relation(fields: [userId], references: [id])
+  userId     String
+  type       NotificationType
+  payload    Json
+  read       Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+}
+
+model SavedView {
+  id         String   @id @default(uuid())
+  project    Project? @relation(fields: [projectId], references: [id])
+  projectId  String?
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  name       String
+  config     Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

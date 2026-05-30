@@ -1,0 +1,22 @@
+{
+  "name": "monday-clone",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev": "npm run dev:web",
+    "lint": "npm --prefix apps/web run lint && npm --prefix apps/api run lint",
+    "format": "prettier --write .",
+    "prisma:migrate": "cd prisma && npm exec prisma migrate dev --name init",
+    "prisma:seed": "cd prisma && npm exec ts-node --transpile-only seed.ts",
+    "bootstrap": "npm install"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
+}
