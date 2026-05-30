@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { DemoItem } from '../../lib/demoData';
+import { useT } from '../../lib/i18n';
 
 export type TaskModalMode = 'create' | 'edit';
 
@@ -34,6 +35,7 @@ interface TaskModalProps {
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({ mode, item, members, workflow, onClose, onSave, onDelete }) => {
+  const t = useT();
   const [draft, setDraft] = useState<DemoItem>(item);
 
   const update = <K extends keyof DemoItem>(key: K, value: DemoItem[K]) => {
@@ -43,15 +45,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({ mode, item, members, workf
   const canSave = draft.title.trim().length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[32px] bg-white p-8 shadow-2xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[32px] bg-white p-8 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <span className="text-lg">{itemTypeEmoji(draft.type)}</span>
-            <span className="font-semibold">{mode === 'create' ? 'Yeni Task' : draft.key}</span>
+            <span className="font-semibold">{mode === 'create' ? t('task.new') : draft.key}</span>
           </div>
           <button onClick={onClose} className="rounded-full bg-neutral-100 px-3 py-1 text-sm font-semibold text-ink hover:bg-neutral-200">
             ✕
@@ -60,46 +62,46 @@ export const TaskModal: React.FC<TaskModalProps> = ({ mode, item, members, workf
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Başlık</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">{t('task.title')}</label>
             <input
               autoFocus
               value={draft.title}
               onChange={(e) => update('title', e.target.value)}
-              placeholder="Task başlığı"
+              placeholder={t('task.titlePlaceholder')}
               className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-ink outline-none focus:border-accent-blue"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <Field label="Durum">
+            <Field label={t('task.status')}>
               <select value={draft.status} onChange={(e) => update('status', e.target.value)} className={selectClass}>
                 {workflow.map((status) => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Tip">
+            <Field label={t('task.type')}>
               <select value={draft.type} onChange={(e) => update('type', e.target.value as DemoItem['type'])} className={selectClass}>
                 {TYPES.map((type) => (
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Öncelik">
+            <Field label={t('task.priority')}>
               <select value={draft.priority} onChange={(e) => update('priority', e.target.value as DemoItem['priority'])} className={selectClass}>
                 {PRIORITIES.map((priority) => (
                   <option key={priority} value={priority}>{priority}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Atanan">
+            <Field label={t('task.assignee')}>
               <select value={draft.assignee} onChange={(e) => update('assignee', e.target.value)} className={selectClass}>
                 {members.map((member) => (
                   <option key={member} value={member}>{member}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Story Points">
+            <Field label={t('task.points')}>
               <input
                 type="number"
                 min={0}
@@ -108,12 +110,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ mode, item, members, workf
                 className={selectClass}
               />
             </Field>
-            <Field label="Bitiş">
+            <Field label={t('task.due')}>
               <input type="date" value={draft.dueDate} onChange={(e) => update('dueDate', e.target.value)} className={selectClass} />
             </Field>
           </div>
 
-          <div className="text-xs text-slate-500">Reporter: <span className="font-semibold text-ink">{draft.reporter}</span></div>
+          <div className="text-xs text-slate-500">{t('task.reporter')}: <span className="font-semibold text-ink">{draft.reporter}</span></div>
         </div>
 
         <div className="mt-8 flex items-center justify-between gap-3">
@@ -122,21 +124,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({ mode, item, members, workf
               onClick={() => onDelete(draft.id)}
               className="rounded-full border border-brand-red/30 px-5 py-3 text-sm font-semibold text-brand-red transition hover:bg-brand-red/10"
             >
-              Sil
+              {t('action.delete')}
             </button>
           ) : (
             <span />
           )}
           <div className="flex gap-3">
             <button onClick={onClose} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100">
-              İptal
+              {t('action.cancel')}
             </button>
             <button
               onClick={() => onSave(draft, mode)}
               disabled={!canSave}
               className="rounded-full bg-accent-blue px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:opacity-40"
             >
-              {mode === 'create' ? 'Task Ekle' : 'Kaydet'}
+              {mode === 'create' ? t('action.add') : t('action.save')}
             </button>
           </div>
         </div>

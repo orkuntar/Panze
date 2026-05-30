@@ -20,9 +20,9 @@ export const MyTasksCard: React.FC<MyTasksCardProps> = ({ workspace, currentUser
   }, [workspace, currentUserName]);
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-card">
+    <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
       <h2 className="text-3xl font-extrabold text-ink mb-6">My Tasks</h2>
-      <div className="space-y-3">
+      <div className="space-y-3 stagger">
         {tasks.length === 0 && <p className="text-sm text-muted">Açık task yok 🎉</p>}
         {tasks.map((task, index) => {
           const peach = index % 2 === 0;

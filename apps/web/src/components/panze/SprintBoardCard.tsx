@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { DemoProject, DemoItem, DemoSprint } from '../../lib/demoData';
 import { TaskModal, type TaskModalMode } from './TaskModal';
+import { useT } from '../../lib/i18n';
 
 const sprintStatusBadge = (status: DemoSprint['status']) => {
   switch (status) {
@@ -20,6 +21,7 @@ interface SprintBoardCardProps {
 }
 
 export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, members, onProjectChange }) => {
+  const t = useT();
   const [newSprintName, setNewSprintName] = useState('');
   const [newSprintGoal, setNewSprintGoal] = useState('');
   const [showSprintForm, setShowSprintForm] = useState(false);
@@ -89,7 +91,7 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
   };
 
   const renderItem = (item: DemoItem) => (
-    <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-blue/40 hover:shadow-md">
       <button onClick={() => setModal({ mode: 'edit', item })} className="min-w-0 flex-1 text-left">
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="font-semibold">{item.key}</span>
@@ -117,9 +119,9 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
   if (project.type !== 'SCRUM') {
     return (
       <div className="bg-white rounded-2xl p-8 shadow-card">
-        <p className="text-sm uppercase tracking-[0.3em] text-muted">Scrum Backlog</p>
+        <p className="text-sm uppercase tracking-[0.3em] text-muted">{t('sprint.backlog')}</p>
         <h2 className="text-3xl font-extrabold text-ink mt-2">{project.name}</h2>
-        <p className="mt-4 text-sm text-muted">Bu bir Kanban projesi — sprint akışı yalnızca Scrum projelerinde kullanılır. Board görünümünü kullanın.</p>
+        <p className="mt-4 text-sm text-muted">{t('sprint.kanbanNote')}</p>
       </div>
     );
   }
@@ -128,11 +130,11 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
     <div className="bg-white rounded-2xl p-8 shadow-card">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-muted">Scrum Backlog</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-muted">{t('sprint.backlog')}</p>
           <h2 className="text-3xl font-extrabold text-ink mt-2">{project.name}</h2>
         </div>
         <button onClick={() => setShowSprintForm((p) => !p)} className="rounded-full bg-accent-orange px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95">
-          Yeni Sprint
+          {t('sprint.new')}
         </button>
       </div>
 
@@ -141,23 +143,23 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
           <input
             value={newSprintName}
             onChange={(e) => setNewSprintName(e.target.value)}
-            placeholder="Sprint adı"
+            placeholder={t('sprint.name')}
             className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink outline-none"
           />
           <input
             value={newSprintGoal}
             onChange={(e) => setNewSprintGoal(e.target.value)}
-            placeholder="Sprint hedefi"
+            placeholder={t('sprint.goal')}
             className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink outline-none"
           />
           <div className="flex gap-3">
-            <button onClick={createSprint} className="rounded-full bg-accent-blue px-5 py-3 text-sm font-semibold text-white hover:opacity-95">Oluştur</button>
-            <button onClick={() => setShowSprintForm(false)} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-slate-100">İptal</button>
+            <button onClick={createSprint} className="rounded-full bg-accent-blue px-5 py-3 text-sm font-semibold text-white hover:opacity-95">{t('action.create')}</button>
+            <button onClick={() => setShowSprintForm(false)} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-slate-100">{t('action.cancel')}</button>
           </div>
         </div>
       )}
 
-      <div className="mt-8 space-y-6">
+      <div className="mt-8 space-y-6 stagger">
         {project.sprints.map((sprint) => {
           const sprintItems = itemsBySprint[sprint.id] ?? [];
           const done = sprintItems.filter((i) => i.status === 'Done').length;
@@ -174,16 +176,16 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
                 </div>
                 <div className="flex gap-2">
                   {sprint.status === 'FUTURE' && (
-                    <button onClick={() => setSprintStatus(sprint.id, 'ACTIVE')} className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-95">Sprint Başlat</button>
+                    <button onClick={() => setSprintStatus(sprint.id, 'ACTIVE')} className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-95">{t('sprint.start')}</button>
                   )}
                   {sprint.status === 'ACTIVE' && (
-                    <button onClick={() => setSprintStatus(sprint.id, 'CLOSED')} className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-95">Sprint Tamamla</button>
+                    <button onClick={() => setSprintStatus(sprint.id, 'CLOSED')} className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-95">{t('sprint.complete')}</button>
                   )}
                 </div>
               </div>
               <div className="mt-4 space-y-2">
                 {sprintItems.length === 0 ? (
-                  <p className="text-xs text-slate-500">Bu sprintte henüz item yok — backlog'dan taşıyın.</p>
+                  <p className="text-xs text-slate-500">{t('sprint.empty')}</p>
                 ) : (
                   sprintItems.map(renderItem)
                 )}
@@ -199,7 +201,7 @@ export const SprintBoardCard: React.FC<SprintBoardCardProps> = ({ project, membe
           </div>
           <div className="mt-4 space-y-2">
             {backlog.length === 0 ? (
-              <p className="text-xs text-slate-500">Backlog boş.</p>
+              <p className="text-xs text-slate-500">{t('sprint.backlogEmpty')}</p>
             ) : (
               backlog.map(renderItem)
             )}

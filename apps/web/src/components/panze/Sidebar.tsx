@@ -1,12 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Grid3x3,
   Layers,
   Repeat,
   Table,
   FileText,
-  Settings
+  Settings,
+  Table2
 } from 'lucide-react';
+import { useT } from '../../lib/i18n';
 
 interface PanzeSidebarProps {
   activeView: 'dashboard' | 'board' | 'sprint' | 'table' | 'report';
@@ -14,12 +17,14 @@ interface PanzeSidebarProps {
 }
 
 export const PanzeSidebar: React.FC<PanzeSidebarProps> = ({ activeView, onViewChange }) => {
+  const t = useT();
+  const navigate = useNavigate();
   const icons = [
-    { Icon: Grid3x3, label: 'Dashboard', view: 'dashboard' as const },
-    { Icon: Layers, label: 'Board', view: 'board' as const },
-    { Icon: Repeat, label: 'Sprint', view: 'sprint' as const },
-    { Icon: Table, label: 'Table', view: 'table' as const },
-    { Icon: FileText, label: 'Report', view: 'report' as const }
+    { Icon: Grid3x3, label: t('nav.dashboard'), view: 'dashboard' as const },
+    { Icon: Layers, label: t('nav.board'), view: 'board' as const },
+    { Icon: Repeat, label: t('nav.sprint'), view: 'sprint' as const },
+    { Icon: Table, label: t('nav.table'), view: 'table' as const },
+    { Icon: FileText, label: t('nav.report'), view: 'report' as const }
   ];
 
   return (
@@ -33,9 +38,9 @@ export const PanzeSidebar: React.FC<PanzeSidebarProps> = ({ activeView, onViewCh
             title={item.label}
           >
             <div
-              className={`w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all ${
+              className={`w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 ${
                 activeView === item.view
-                  ? 'bg-ink text-white'
+                  ? 'bg-ink text-white scale-105 shadow-lg'
                   : 'bg-neutral-100 text-ink hover:bg-neutral-200'
               }`}
             >
@@ -46,6 +51,11 @@ export const PanzeSidebar: React.FC<PanzeSidebarProps> = ({ activeView, onViewCh
       </div>
 
       <div className="flex-1" />
+      <button onClick={() => navigate('/board')} className="relative" title="Monday Board">
+        <div className="w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 bg-md-primary text-white shadow-lg">
+          <Table2 size={24} />
+        </div>
+      </button>
       <button
         onClick={() => onViewChange('dashboard')}
         className="relative"

@@ -2,20 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---- Theme tokens (light is the default) ---- */
 :root {
+  --gradient-from: #F2C6A0;
+  --gradient-mid: #E9DCD2;
+  --gradient-to: #9DB0C7;
+  --panel: #F4F5F7;
+  --card: #FFFFFF;
+  --ink: #1A1C22;
+  --muted: #8A8F98;
+  --line: #ECEDEF;
+  --accent-orange: #F8852C;
+  --accent-blue: #2F8BFB; /* primary accent — overridden by [data-accent] */
+  --neutral-200: #E6E8EB;
+  --task-peach: #FCE9DB;
+  --task-blue: #E9F1FD;
+  color-scheme: light;
+}
+
+/* ---- Accent presets (theme selector) ---- */
+[data-accent='blue'] { --accent-blue: #2F8BFB; }
+[data-accent='violet'] { --accent-blue: #7C4DFF; }
+[data-accent='emerald'] { --accent-blue: #10B981; }
+[data-accent='rose'] { --accent-blue: #F43F5E; }
+[data-accent='amber'] { --accent-blue: #F8852C; }
+
+/* ---- Dark mode ---- */
+[data-theme='dark'] {
+  --gradient-from: #2a2440;
+  --gradient-mid: #1e293b;
+  --gradient-to: #0f172a;
+  --panel: #1e2129;
+  --card: #1a1c22;
+  --ink: #E8EAED;
+  --muted: #9aa0ab;
+  --line: #2c3038;
+  --neutral-200: #2c3038;
+  --task-peach: #3a2c24;
+  --task-blue: #1f2b3d;
   color-scheme: dark;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* Re-map the raw Tailwind palette utilities the components use, so dark mode
+   applies app-wide without editing every component. Attribute+class wins on
+   specificity over the plain utility class. */
+[data-theme='dark'] .bg-white { background-color: #1a1c22 !important; }
+[data-theme='dark'] .bg-white\/80 { background-color: rgba(26, 28, 34, 0.8) !important; }
+[data-theme='dark'] .bg-white\/70 { background-color: rgba(26, 28, 34, 0.7) !important; }
+[data-theme='dark'] .border-white\/70 { border-color: rgba(255, 255, 255, 0.08) !important; }
+[data-theme='dark'] .bg-slate-50 { background-color: #181b22 !important; }
+[data-theme='dark'] .bg-slate-100 { background-color: #232730 !important; }
+[data-theme='dark'] .bg-neutral-100 { background-color: #232730 !important; }
+[data-theme='dark'] .text-ink { color: #E8EAED !important; }
+[data-theme='dark'] .text-slate-700 { color: #cbd1da !important; }
+[data-theme='dark'] .text-slate-600 { color: #b6bcc7 !important; }
+[data-theme='dark'] .text-slate-500 { color: #9aa0ab !important; }
+[data-theme='dark'] .border-slate-100 { border-color: #2c3038 !important; }
+[data-theme='dark'] .border-slate-200 { border-color: #333845 !important; }
+[data-theme='dark'] .border-line { border-color: #2c3038 !important; }
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] textarea { color: #E8EAED; }
+
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #0f172a;
+  font-family: 'Plus Jakarta Sans', 'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background: var(--gradient-to);
 }
 
-button, input, textarea, select {
-  font: inherit;
+button, input, textarea, select { font: inherit; }
+
+/* Soft, consistent micro-interactions across the app */
+button { transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+button:active { transform: scale(0.96); }
+
+/* Surfaces that opt into a gentle hover lift */
+.card-hover { transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1); }
+
+/* Staggered list entrance: parent gets .stagger, children animate in sequence */
+.stagger > * { animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.09s; }
+.stagger > *:nth-child(3) { animation-delay: 0.14s; }
+.stagger > *:nth-child(4) { animation-delay: 0.19s; }
+.stagger > *:nth-child(5) { animation-delay: 0.24s; }
+.stagger > *:nth-child(6) { animation-delay: 0.29s; }
+.stagger > *:nth-child(7) { animation-delay: 0.34s; }
+.stagger > *:nth-child(8) { animation-delay: 0.39s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

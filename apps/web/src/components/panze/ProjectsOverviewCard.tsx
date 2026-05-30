@@ -23,7 +23,7 @@ export const ProjectsOverviewCard: React.FC<ProjectsOverviewCardProps> = ({ work
   const pct = (value: number) => (total === 0 ? 0 : Math.round((value / total) * 100));
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-card">
+    <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Projects Overview</p>
@@ -33,7 +33,7 @@ export const ProjectsOverviewCard: React.FC<ProjectsOverviewCardProps> = ({ work
 
       <div className="flex items-center gap-8">
         <div className="w-[180px] h-[180px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="99%" height="100%" minWidth={0}>
             <PieChart>
               <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={54} outerRadius={80} startAngle={90} endAngle={-270}>
                 {pieData.map((entry) => (

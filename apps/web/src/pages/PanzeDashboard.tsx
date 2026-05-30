@@ -71,20 +71,20 @@ export const PanzeDashboard: React.FC = () => {
 
             {activeView === 'dashboard' && workspace && (
               <>
-                <div className="mt-8 grid gap-6 xl:grid-cols-[1.35fr_1fr_1fr] lg:grid-cols-2 sm:grid-cols-1">
+                <div className="mt-8 grid gap-6 stagger xl:grid-cols-[1.35fr_1fr_1fr] lg:grid-cols-2 sm:grid-cols-1">
                   <MyTasksCard workspace={workspace} currentUserName={currentUser?.name ?? null} />
                   <ProjectsOverviewCard workspace={workspace} />
                   <IncomeExpenseCard workspace={workspace} />
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 animate-fade-in-up">
                   <InvoiceOverviewCard workspace={workspace} />
                 </div>
               </>
             )}
 
             {activeView === 'board' && workspace && (
-              <div className="mt-8">
+              <div className="mt-8 animate-fade-in-up">
                 <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm uppercase tracking-[0.3em] text-muted">Monday Board</p>
@@ -116,7 +116,7 @@ export const PanzeDashboard: React.FC = () => {
             )}
 
             {activeView === 'sprint' && workspace && (
-              <div className="mt-8">
+              <div className="mt-8 animate-fade-in-up">
                 <div className="mb-6 flex flex-wrap justify-end gap-3">
                   {workspace.projects.map((project) => (
                     <button
@@ -139,13 +139,13 @@ export const PanzeDashboard: React.FC = () => {
             )}
 
             {activeView === 'table' && workspace && (
-              <div className="mt-8">
+              <div className="mt-8 animate-fade-in-up">
                 <TableBoardCard workspace={workspace} onWorkspaceChange={handleWorkspaceChange} />
               </div>
             )}
 
             {activeView === 'report' && workspace && (
-              <div className="mt-8">
+              <div className="mt-8 animate-fade-in-up">
                 <ReportBuilderCard workspace={workspace} />
               </div>
             )}

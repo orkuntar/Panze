@@ -27,7 +27,18 @@ export type DemoSprint = {
   endDate: string;
 };
 
-export type TableColumnType = 'text' | 'status' | 'date' | 'person' | 'number';
+export type TableColumnType =
+  | 'text'
+  | 'longtext'
+  | 'status'
+  | 'date'
+  | 'person'
+  | 'number'
+  | 'checkbox'
+  | 'rating'
+  | 'url'
+  | 'file'
+  | 'tags';
 
 export type DemoTableColumn = {
   id: string;
@@ -36,8 +47,16 @@ export type DemoTableColumn = {
   options?: string[];
 };
 
+export type DemoTableGroup = {
+  id: string;
+  name: string;
+  color: string;
+  collapsed?: boolean;
+};
+
 export type DemoTableRow = {
   id: string;
+  groupId: string;
   values: Record<string, string>;
 };
 
@@ -45,6 +64,7 @@ export type DemoTable = {
   id: string;
   name: string;
   columns: DemoTableColumn[];
+  groups: DemoTableGroup[];
   rows: DemoTableRow[];
 };
 
@@ -142,45 +162,50 @@ function createDemoData(): DemoWorkspace {
             { id: 'col-assignee', name: 'Assignee', type: 'person' },
             { id: 'col-date', name: 'Due Date', type: 'date' }
           ],
+          groups: [
+            { id: 'group-todo', name: 'Yapılacaklar', color: '#579bfc' },
+            { id: 'group-done', name: 'Tamamlananlar', color: '#00c875' }
+          ],
           rows: [
-            {
-              id: 'row-1',
-              values: {
-                'col-name': 'Yeni kullanıcı akışı tasarla',
-                'col-status': 'To Do',
-                'col-assignee': 'Alice Yılmaz',
-                'col-date': '2026-06-04'
-              }
-            },
-            {
-              id: 'row-2',
-              values: {
-                'col-name': 'Dashboard yüklenmiyor hatası',
-                'col-status': 'Doing',
-                'col-assignee': 'Ceyda Arslan',
-                'col-date': '2026-06-01'
-              }
-            },
-            {
-              id: 'row-3',
-              values: {
-                'col-name': 'Veri modeli doğrulama ekle',
-                'col-status': 'To Do',
-                'col-assignee': 'Bob Demir',
-                'col-date': '2026-06-02'
-              }
-            }
+            { id: 'row-1', groupId: 'group-todo', values: { 'col-name': 'Yeni kullanıcı akışı tasarla', 'col-status': 'To Do', 'col-assignee': 'Alice Yılmaz', 'col-date': '2026-06-04' } },
+            { id: 'row-2', groupId: 'group-todo', values: { 'col-name': 'Dashboard yüklenmiyor hatası', 'col-status': 'Doing', 'col-assignee': 'Ceyda Arslan', 'col-date': '2026-06-01' } },
+            { id: 'row-3', groupId: 'group-todo', values: { 'col-name': 'Veri modeli doğrulama ekle', 'col-status': 'To Do', 'col-assignee': 'Bob Demir', 'col-date': '2026-06-02' } },
+            { id: 'row-4', groupId: 'group-done', values: { 'col-name': 'Sprint planlama toplantısı', 'col-status': 'Done', 'col-assignee': 'Bob Demir', 'col-date': '2026-05-28' } }
           ]
         }
       ]
     };
   }
 
+// Backfill fields added after data was first persisted, so older localStorage
+// snapshots (e.g. without `sprints`) don't crash newer components.
+function normalizeWorkspace(workspace: DemoWorkspace): DemoWorkspace {
+  return {
+    ...workspace,
+    tables: (workspace.tables ?? []).map((table) => {
+      const groups = table.groups && table.groups.length > 0
+        ? table.groups
+        : [{ id: `group-${table.id}-default`, name: 'Grup 1', color: '#579bfc' }];
+      const defaultGroupId = groups[0].id;
+      return {
+        ...table,
+        groups,
+        rows: (table.rows ?? []).map((row) => ({ ...row, groupId: row.groupId ?? defaultGroupId }))
+      };
+    }),
+    projects: (workspace.projects ?? []).map((project) => ({
+      ...project,
+      sprints: project.sprints ?? [],
+      items: (project.items ?? []).map((item) => ({ ...item, sprintId: item.sprintId ?? null }))
+    }))
+  };
+}
+
 export function loadDemoData(): DemoWorkspace {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored) as DemoWorkspace;
+      return normalizeWorkspace(JSON.parse(stored) as DemoWorkspace);
     } catch {
       // fallback to reseed when storage is corrupt
     }

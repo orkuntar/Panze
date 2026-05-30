@@ -19,7 +19,7 @@ export const IncomeExpenseCard: React.FC<{ workspace: DemoWorkspace }> = ({ work
   );
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-card">
+    <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Planned VS Completed</p>
@@ -29,7 +29,7 @@ export const IncomeExpenseCard: React.FC<{ workspace: DemoWorkspace }> = ({ work
       </div>
 
       <div className="h-[320px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="99%" height="100%" minWidth={0}>
           <AreaChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="plannedGradient" x1="0" y1="0" x2="0" y2="1">

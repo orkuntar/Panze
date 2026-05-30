@@ -15,7 +15,7 @@ export const InvoiceOverviewCard: React.FC<{ workspace: DemoWorkspace }> = ({ wo
   }, [workspace]);
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-card">
+    <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Workload Overview</p>
@@ -35,7 +35,7 @@ export const InvoiceOverviewCard: React.FC<{ workspace: DemoWorkspace }> = ({ wo
               <p className="text-base font-semibold text-ink">{row.pct}%</p>
             </div>
             <div className="h-3 rounded-full bg-neutral-100 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-purple-700 to-indigo-500" style={{ width: `${row.pct}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-purple-700 to-indigo-500 transition-[width] duration-700 ease-out" style={{ width: `${row.pct}%` }} />
             </div>
           </div>
         ))}
