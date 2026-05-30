@@ -4,8 +4,8 @@ import { Search } from 'lucide-react';
 interface PanzeTopBarProps {
   workspaceName: string;
   membersCount: number;
-  activeView: 'dashboard' | 'board' | 'table' | 'report';
-  onViewChange: (view: 'dashboard' | 'board' | 'table' | 'report') => void;
+  activeView: 'dashboard' | 'board' | 'sprint' | 'table' | 'report';
+  onViewChange: (view: 'dashboard' | 'board' | 'sprint' | 'table' | 'report') => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
 }
@@ -14,6 +14,7 @@ export const PanzeTopBar: React.FC<PanzeTopBarProps> = ({ workspaceName, members
   const views = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'board', label: 'Board' },
+    { id: 'sprint', label: 'Sprint' },
     { id: 'table', label: 'Table' },
     { id: 'report', label: 'Report' }
   ];

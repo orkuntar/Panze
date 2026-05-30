@@ -29,6 +29,7 @@ export const TableBoardCard: React.FC<TableBoardCardProps> = ({ workspace, onWor
   const [newTableName, setNewTableName] = useState('');
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnType, setNewColumnType] = useState<TableColumnType>('text');
+  const [sort, setSort] = useState<{ columnId: string; dir: 'asc' | 'desc' } | null>(null);
 
   useEffect(() => {
     if (!activeTableId && workspace.tables?.[0]?.id) {
@@ -112,6 +113,40 @@ export const TableBoardCard: React.FC<TableBoardCardProps> = ({ workspace, onWor
     }));
   };
 
+  const updateCell = (rowId: string, columnId: string, value: string) => {
+    updateTable((curr) => ({
+      ...curr,
+      rows: curr.rows.map((row) =>
+        row.id === rowId ? { ...row, values: { ...row.values, [columnId]: value } } : row
+      )
+    }));
+  };
+
+  const deleteColumn = (columnId: string) => {
+    updateTable((curr) => ({
+      ...curr,
+      columns: curr.columns.filter((column) => column.id !== columnId),
+      rows: curr.rows.map((row) => {
+        const { [columnId]: _removed, ...rest } = row.values;
+        return { ...row, values: rest };
+      })
+    }));
+    setSort((prev) => (prev?.columnId === columnId ? null : prev));
+  };
+
+  const deleteRow = (rowId: string) => {
+    updateTable((curr) => ({ ...curr, rows: curr.rows.filter((row) => row.id !== rowId) }));
+    setSelectedRowId((prev) => (prev === rowId ? null : prev));
+  };
+
+  const toggleSort = (columnId: string) => {
+    setSort((prev) =>
+      prev?.columnId === columnId
+        ? { columnId, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { columnId, dir: 'asc' }
+    );
+  };
+
   if (!table) {
     return (
       <div className="bg-white rounded-2xl p-8 shadow-card">
@@ -121,6 +156,52 @@ export const TableBoardCard: React.FC<TableBoardCardProps> = ({ workspace, onWor
   }
 
   const selectedRow = table.rows.find((row) => row.id === selectedRowId) ?? table.rows[0] ?? null;
+
+  const displayRows = (() => {
+    if (!sort) return table.rows;
+    const column = table.columns.find((col) => col.id === sort.columnId);
+    const rows = [...table.rows];
+    rows.sort((a, b) => {
+      const av = a.values[sort.columnId] ?? '';
+      const bv = b.values[sort.columnId] ?? '';
+      const cmp =
+        column?.type === 'number' ? Number(av) - Number(bv) : av.localeCompare(bv);
+      return sort.dir === 'asc' ? cmp : -cmp;
+    });
+    return rows;
+  })();
+
+  const renderCell = (row: { id: string; values: Record<string, string> }, column: { id: string; type: TableColumnType; options?: string[] }) => {
+    const value = row.values[column.id] ?? '';
+    const base = 'w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-slate-700 outline-none focus:border-accent-blue focus:bg-white';
+    if (column.type === 'status') {
+      return (
+        <select value={value} onChange={(e) => updateCell(row.id, column.id, e.target.value)} className={base}>
+          {(column.options ?? ['To Do', 'Doing', 'Done']).map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      );
+    }
+    if (column.type === 'person') {
+      return (
+        <select value={value} onChange={(e) => updateCell(row.id, column.id, e.target.value)} className={base}>
+          <option value="">—</option>
+          {workspace.members.map((member) => (
+            <option key={member} value={member}>{member}</option>
+          ))}
+        </select>
+      );
+    }
+    return (
+      <input
+        type={column.type === 'date' ? 'date' : column.type === 'number' ? 'number' : 'text'}
+        value={value}
+        onChange={(e) => updateCell(row.id, column.id, e.target.value)}
+        className={base}
+      />
+    );
+  };
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-card">
@@ -229,7 +310,20 @@ export const TableBoardCard: React.FC<TableBoardCardProps> = ({ workspace, onWor
               {table.columns.map((column) => (
                 <th key={column.id} className="whitespace-nowrap px-4 py-4">
                   <div className="flex flex-col gap-2">
-                    <span>{column.name}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <button onClick={() => toggleSort(column.id)} className="flex items-center gap-1 hover:text-ink" title="Sırala">
+                        <span>{column.name}</span>
+                        <span className="text-[10px]">{sort?.columnId === column.id ? (sort.dir === 'asc' ? '▲' : '▼') : '↕'}</span>
+                      </button>
+                      <button
+                        onClick={() => deleteColumn(column.id)}
+                        disabled={table.columns.length <= 1}
+                        className="text-slate-400 hover:text-brand-red disabled:opacity-30"
+                        title="Kolonu sil"
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <select
                       value={column.type}
                       onChange={(e) => setColumnType(column.id, e.target.value as TableColumnType)}
@@ -242,27 +336,31 @@ export const TableBoardCard: React.FC<TableBoardCardProps> = ({ workspace, onWor
                   </div>
                 </th>
               ))}
+              <th className="px-4 py-4" />
             </tr>
           </thead>
           <tbody>
-            {table.rows.length === 0 ? (
+            {displayRows.length === 0 ? (
               <tr>
-                <td colSpan={table.columns.length} className="px-4 py-8 text-center text-sm text-slate-500">
+                <td colSpan={table.columns.length + 1} className="px-4 py-8 text-center text-sm text-slate-500">
                   Bu tabloya henüz satır eklenmedi.
                 </td>
               </tr>
             ) : (
-              table.rows.map((row) => (
+              displayRows.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => setSelectedRowId(row.id)}
-                  className={`cursor-pointer border-t border-slate-100 transition hover:bg-slate-50 ${row.id === selectedRowId ? 'bg-slate-100' : ''}`}
+                  className={`border-t border-slate-100 transition hover:bg-slate-50 ${row.id === selectedRowId ? 'bg-slate-100' : ''}`}
                 >
                   {table.columns.map((column) => (
-                    <td key={column.id} className="px-4 py-4 align-top text-sm text-slate-700">
-                      {row.values[column.id]}
+                    <td key={column.id} className="px-2 py-2 align-top" onClick={(e) => e.stopPropagation()}>
+                      {renderCell(row, column)}
                     </td>
                   ))}
+                  <td className="px-2 py-2 align-middle text-center" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => deleteRow(row.id)} className="text-slate-400 hover:text-brand-red" title="Satırı sil">✕</button>
+                  </td>
                 </tr>
               ))
             )}

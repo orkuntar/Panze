@@ -7,14 +7,17 @@ import { ProjectsOverviewCard } from '../components/panze/ProjectsOverviewCard';
 import { IncomeExpenseCard } from '../components/panze/IncomeExpenseCard';
 import { InvoiceOverviewCard } from '../components/panze/InvoiceOverviewCard';
 import { ProjectBoardCard } from '../components/panze/ProjectBoardCard';
+import { SprintBoardCard } from '../components/panze/SprintBoardCard';
 import { TableBoardCard } from '../components/panze/TableBoardCard';
 import { ReportBuilderCard } from '../components/panze/ReportBuilderCard';
+import { useAuthStore } from '../store/authStore';
 
 export const PanzeDashboard: React.FC = () => {
   const [workspace, setWorkspace] = useState<DemoWorkspace | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'dashboard' | 'board' | 'table' | 'report'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'board' | 'sprint' | 'table' | 'report'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const currentUser = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const data = loadDemoData();
@@ -35,6 +38,20 @@ export const PanzeDashboard: React.FC = () => {
     handleWorkspaceChange({ ...workspace, projects: updatedProjects });
   };
 
+  // In-memory only: board card moves/edits update session state without persisting.
+  const handleProjectChangeInMemory = (updatedProject: DemoWorkspace['projects'][number]) => {
+    setWorkspace((prev) =>
+      prev
+        ? {
+            ...prev,
+            projects: prev.projects.map((project) =>
+              project.id === updatedProject.id ? updatedProject : project
+            )
+          }
+        : prev
+    );
+  };
+
   const activeProject = workspace?.projects.find((project) => project.id === activeProjectId) ?? null;
 
   return (
@@ -52,16 +69,16 @@ export const PanzeDashboard: React.FC = () => {
               onSearchChange={setSearchQuery}
             />
 
-            {activeView === 'dashboard' && (
+            {activeView === 'dashboard' && workspace && (
               <>
                 <div className="mt-8 grid gap-6 xl:grid-cols-[1.35fr_1fr_1fr] lg:grid-cols-2 sm:grid-cols-1">
-                  <MyTasksCard />
-                  <ProjectsOverviewCard />
-                  <IncomeExpenseCard />
+                  <MyTasksCard workspace={workspace} currentUserName={currentUser?.name ?? null} />
+                  <ProjectsOverviewCard workspace={workspace} />
+                  <IncomeExpenseCard workspace={workspace} />
                 </div>
 
                 <div className="mt-6">
-                  <InvoiceOverviewCard />
+                  <InvoiceOverviewCard workspace={workspace} />
                 </div>
               </>
             )}
@@ -91,8 +108,32 @@ export const PanzeDashboard: React.FC = () => {
                 </div>
                 <ProjectBoardCard
                   project={activeProject ?? workspace.projects[0]}
+                  members={workspace.members}
                   searchQuery={searchQuery}
-                  onProjectChange={handleProjectChange}
+                  onProjectChange={handleProjectChangeInMemory}
+                />
+              </div>
+            )}
+
+            {activeView === 'sprint' && workspace && (
+              <div className="mt-8">
+                <div className="mb-6 flex flex-wrap justify-end gap-3">
+                  {workspace.projects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => setActiveProjectId(project.id)}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        project.id === activeProjectId ? 'bg-accent-blue text-white' : 'bg-neutral-100 text-ink hover:bg-neutral-200'
+                      }`}
+                    >
+                      {project.key}
+                    </button>
+                  ))}
+                </div>
+                <SprintBoardCard
+                  project={activeProject ?? workspace.projects[0]}
+                  members={workspace.members}
+                  onProjectChange={handleProjectChangeInMemory}
                 />
               </div>
             )}

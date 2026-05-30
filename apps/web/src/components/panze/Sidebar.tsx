@@ -2,21 +2,22 @@ import React from 'react';
 import {
   Grid3x3,
   Layers,
+  Repeat,
   Table,
-  PieChart,
   FileText,
   Settings
 } from 'lucide-react';
 
 interface PanzeSidebarProps {
-  activeView: 'dashboard' | 'board' | 'table' | 'report';
-  onViewChange: (view: 'dashboard' | 'board' | 'table' | 'report') => void;
+  activeView: 'dashboard' | 'board' | 'sprint' | 'table' | 'report';
+  onViewChange: (view: 'dashboard' | 'board' | 'sprint' | 'table' | 'report') => void;
 }
 
 export const PanzeSidebar: React.FC<PanzeSidebarProps> = ({ activeView, onViewChange }) => {
   const icons = [
     { Icon: Grid3x3, label: 'Dashboard', view: 'dashboard' as const },
     { Icon: Layers, label: 'Board', view: 'board' as const },
+    { Icon: Repeat, label: 'Sprint', view: 'sprint' as const },
     { Icon: Table, label: 'Table', view: 'table' as const },
     { Icon: FileText, label: 'Report', view: 'report' as const }
   ];

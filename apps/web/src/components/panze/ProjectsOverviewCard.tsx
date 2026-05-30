@@ -1,20 +1,33 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { mockProjectsData } from '../../data/mock';
+import type { DemoWorkspace } from '../../lib/demoData';
+import { statusBreakdown } from '../../lib/analytics';
 
-const pieData = [
-  { name: 'In Progress', value: mockProjectsData.inProgress, color: '#F8852C' },
-  { name: 'Completed', value: mockProjectsData.completed, color: '#2F8BFB' },
-  { name: 'Not Started', value: mockProjectsData.notStarted, color: '#E6E8EB' }
-];
+interface ProjectsOverviewCardProps {
+  workspace: DemoWorkspace;
+}
 
-export const ProjectsOverviewCard: React.FC = () => {
+export const ProjectsOverviewCard: React.FC<ProjectsOverviewCardProps> = ({ workspace }) => {
+  const { pieData, total } = useMemo(() => {
+    const breakdown = statusBreakdown(workspace);
+    return {
+      total: breakdown.total,
+      pieData: [
+        { name: 'In Progress', value: breakdown.progress, color: '#F8852C' },
+        { name: 'Completed', value: breakdown.done, color: '#2F8BFB' },
+        { name: 'Not Started', value: breakdown.todo, color: '#E6E8EB' }
+      ]
+    };
+  }, [workspace]);
+
+  const pct = (value: number) => (total === 0 ? 0 : Math.round((value / total) * 100));
+
   return (
     <div className="bg-white rounded-2xl p-8 shadow-card">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Projects Overview</p>
-          <h2 className="text-3xl font-extrabold text-ink mt-2">Project Status</h2>
+          <h2 className="text-3xl font-extrabold text-ink mt-2">Task Status</h2>
         </div>
       </div>
 
@@ -46,10 +59,10 @@ export const ProjectsOverviewCard: React.FC = () => {
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: segment.color }}></span>
                 <div>
                   <p className="text-sm font-medium text-ink">{segment.name}</p>
-                  <p className="text-xs text-muted">{segment.value} Projects</p>
+                  <p className="text-xs text-muted">{segment.value} tasks</p>
                 </div>
               </div>
-              <p className="text-sm font-semibold text-ink">{segment.value}%</p>
+              <p className="text-sm font-semibold text-ink">{pct(segment.value)}%</p>
             </div>
           ))}
         </div>

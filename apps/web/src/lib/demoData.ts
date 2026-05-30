@@ -13,6 +13,18 @@ export type DemoItem = {
   storyPoints: number;
   dueDate: string;
   projectId: string;
+  sprintId?: string | null;
+};
+
+export type SprintStatus = 'FUTURE' | 'ACTIVE' | 'CLOSED';
+
+export type DemoSprint = {
+  id: string;
+  name: string;
+  goal: string;
+  status: SprintStatus;
+  startDate: string;
+  endDate: string;
 };
 
 export type TableColumnType = 'text' | 'status' | 'date' | 'person' | 'number';
@@ -44,6 +56,7 @@ export type DemoProject = {
   description: string;
   lead: string;
   workflow: string[];
+  sprints: DemoSprint[];
   items: DemoItem[];
 };
 
@@ -70,19 +83,23 @@ function createDemoData(): DemoWorkspace {
       description: 'Scrum proje örneği, sprint ve issue yönetimi için.',
       lead: 'Alice Yılmaz',
       workflow: ['Backlog', 'Selected', 'In Progress', 'Done'],
+      sprints: [
+        { id: 'sprint-dm-1', name: 'Sprint 1', goal: 'Çekirdek akışlar ve hata düzeltmeleri', status: 'ACTIVE', startDate: '2026-05-26', endDate: '2026-06-06' },
+        { id: 'sprint-dm-2', name: 'Sprint 2', goal: 'Performans ve raporlama', status: 'FUTURE', startDate: '2026-06-09', endDate: '2026-06-20' }
+      ],
       items: [
-        { id: 'item-dm-1', key: 'DM-1', title: 'Yeni kullanıcı akışı tasarla', type: 'STORY', status: 'Backlog', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Bob Demir', storyPoints: 5, dueDate: '2026-06-04', projectId: 'project-dm' },
-        { id: 'item-dm-2', key: 'DM-2', title: 'Dashboard yüklenmiyor hatası', type: 'BUG', status: 'Selected', priority: 'HIGHEST', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-01', projectId: 'project-dm' },
-        { id: 'item-dm-3', key: 'DM-3', title: 'Veri modeli doğrulama ekle', type: 'TASK', status: 'In Progress', priority: 'MEDIUM', assignee: 'Bob Demir', reporter: 'Ceyda Arslan', storyPoints: 2, dueDate: '2026-06-02', projectId: 'project-dm' },
-        { id: 'item-dm-4', key: 'DM-4', title: 'Sprint 1 geribildirim toplantısı', type: 'TASK', status: 'Done', priority: 'LOW', assignee: 'Alice Yılmaz', reporter: 'Demo Kullanıcı', storyPoints: 1, dueDate: '2026-05-29', projectId: 'project-dm' },
-        { id: 'item-dm-5', key: 'DM-5', title: 'Mobil uygulama entegrasyonu', type: 'EPIC', status: 'Backlog', priority: 'HIGH', assignee: 'Bob Demir', reporter: 'Alice Yılmaz', storyPoints: 8, dueDate: '2026-06-08', projectId: 'project-dm' },
-        { id: 'item-dm-6', key: 'DM-6', title: 'API doğrulama katmanı ekle', type: 'STORY', status: 'Backlog', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Demo Kullanıcı', storyPoints: 5, dueDate: '2026-06-06', projectId: 'project-dm' },
-        { id: 'item-dm-7', key: 'DM-7', title: 'Bildirimler gecikiyor', type: 'BUG', status: 'Selected', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Bob Demir', storyPoints: 2, dueDate: '2026-05-31', projectId: 'project-dm' },
-        { id: 'item-dm-8', key: 'DM-8', title: 'Kullanıcı profil sayfası tasarımı', type: 'STORY', status: 'Selected', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-03', projectId: 'project-dm' },
-        { id: 'item-dm-9', key: 'DM-9', title: 'Ürün sürüm notu şablonu oluştur', type: 'TASK', status: 'In Progress', priority: 'LOW', assignee: 'Demo Kullanıcı', reporter: 'Bob Demir', storyPoints: 1, dueDate: '2026-06-05', projectId: 'project-dm' },
-        { id: 'item-dm-10', key: 'DM-10', title: 'Sprint kapanış raporu şablonu', type: 'TASK', status: 'In Progress', priority: 'MEDIUM', assignee: 'Bob Demir', reporter: 'Ceyda Arslan', storyPoints: 2, dueDate: '2026-06-04', projectId: 'project-dm' },
-        { id: 'item-dm-11', key: 'DM-11', title: 'Performans izleme paneli', type: 'STORY', status: 'Backlog', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Demo Kullanıcı', storyPoints: 8, dueDate: '2026-06-10', projectId: 'project-dm' },
-        { id: 'item-dm-12', key: 'DM-12', title: 'Erişilebilirlik testi yap', type: 'TASK', status: 'Backlog', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-09', projectId: 'project-dm' }
+        { id: 'item-dm-1', key: 'DM-1', title: 'Yeni kullanıcı akışı tasarla', type: 'STORY', status: 'Backlog', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Bob Demir', storyPoints: 5, dueDate: '2026-06-04', projectId: 'project-dm', sprintId: null },
+        { id: 'item-dm-2', key: 'DM-2', title: 'Dashboard yüklenmiyor hatası', type: 'BUG', status: 'Selected', priority: 'HIGHEST', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-01', projectId: 'project-dm', sprintId: 'sprint-dm-1' },
+        { id: 'item-dm-3', key: 'DM-3', title: 'Veri modeli doğrulama ekle', type: 'TASK', status: 'In Progress', priority: 'MEDIUM', assignee: 'Bob Demir', reporter: 'Ceyda Arslan', storyPoints: 2, dueDate: '2026-06-02', projectId: 'project-dm', sprintId: 'sprint-dm-1' },
+        { id: 'item-dm-4', key: 'DM-4', title: 'Sprint 1 geribildirim toplantısı', type: 'TASK', status: 'Done', priority: 'LOW', assignee: 'Alice Yılmaz', reporter: 'Demo Kullanıcı', storyPoints: 1, dueDate: '2026-05-29', projectId: 'project-dm', sprintId: 'sprint-dm-1' },
+        { id: 'item-dm-5', key: 'DM-5', title: 'Mobil uygulama entegrasyonu', type: 'EPIC', status: 'Backlog', priority: 'HIGH', assignee: 'Bob Demir', reporter: 'Alice Yılmaz', storyPoints: 8, dueDate: '2026-06-08', projectId: 'project-dm', sprintId: null },
+        { id: 'item-dm-6', key: 'DM-6', title: 'API doğrulama katmanı ekle', type: 'STORY', status: 'Backlog', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Demo Kullanıcı', storyPoints: 5, dueDate: '2026-06-06', projectId: 'project-dm', sprintId: null },
+        { id: 'item-dm-7', key: 'DM-7', title: 'Bildirimler gecikiyor', type: 'BUG', status: 'Selected', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Bob Demir', storyPoints: 2, dueDate: '2026-05-31', projectId: 'project-dm', sprintId: 'sprint-dm-1' },
+        { id: 'item-dm-8', key: 'DM-8', title: 'Kullanıcı profil sayfası tasarımı', type: 'STORY', status: 'Selected', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-03', projectId: 'project-dm', sprintId: 'sprint-dm-1' },
+        { id: 'item-dm-9', key: 'DM-9', title: 'Ürün sürüm notu şablonu oluştur', type: 'TASK', status: 'In Progress', priority: 'LOW', assignee: 'Demo Kullanıcı', reporter: 'Bob Demir', storyPoints: 1, dueDate: '2026-06-05', projectId: 'project-dm', sprintId: null },
+        { id: 'item-dm-10', key: 'DM-10', title: 'Sprint kapanış raporu şablonu', type: 'TASK', status: 'In Progress', priority: 'MEDIUM', assignee: 'Bob Demir', reporter: 'Ceyda Arslan', storyPoints: 2, dueDate: '2026-06-04', projectId: 'project-dm', sprintId: null },
+        { id: 'item-dm-11', key: 'DM-11', title: 'Performans izleme paneli', type: 'STORY', status: 'Backlog', priority: 'HIGH', assignee: 'Alice Yılmaz', reporter: 'Demo Kullanıcı', storyPoints: 8, dueDate: '2026-06-10', projectId: 'project-dm', sprintId: 'sprint-dm-2' },
+        { id: 'item-dm-12', key: 'DM-12', title: 'Erişilebilirlik testi yap', type: 'TASK', status: 'Backlog', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Alice Yılmaz', storyPoints: 3, dueDate: '2026-06-09', projectId: 'project-dm', sprintId: 'sprint-dm-2' }
       ]
     },
     {
@@ -93,6 +110,7 @@ function createDemoData(): DemoWorkspace {
       description: 'Kanban proje örneği, pazarlama işleri için.',
       lead: 'Bob Demir',
       workflow: ['To Do', 'Doing', 'Done'],
+      sprints: [],
       items: [
         { id: 'item-mk-1', key: 'MK-1', title: 'Pazarlama kampanya planı hazırla', type: 'TASK', status: 'To Do', priority: 'MEDIUM', assignee: 'Bob Demir', reporter: 'Demo Kullanıcı', storyPoints: 2, dueDate: '2026-06-07', projectId: 'project-mk' },
         { id: 'item-mk-2', key: 'MK-2', title: 'Sosyal medya içerik takvimi oluştur', type: 'STORY', status: 'Doing', priority: 'MEDIUM', assignee: 'Ceyda Arslan', reporter: 'Bob Demir', storyPoints: 3, dueDate: '2026-06-03', projectId: 'project-mk' },
