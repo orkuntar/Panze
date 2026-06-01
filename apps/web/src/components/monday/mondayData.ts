@@ -15,6 +15,9 @@ export const PRIORITIES: Record<PriorityKey, { label: string; color: string }> =
   high: { label: 'Yüksek', color: '#401694' }
 };
 
+export type MondayUpdate = { id: string; author: string; body: string; ts: string };
+export type MondayActivity = { id: string; text: string; ts: string };
+
 export type MondayRow = {
   id: string;
   task: string;
@@ -30,6 +33,27 @@ export type MondayRow = {
   timeline: string;
   timelineColor: string;
   updated: string;
+  updates?: MondayUpdate[];
+  activity?: MondayActivity[];
+};
+
+export const MEMBERS = ['Orkun Tarhan', 'Alice Yılmaz', 'Bob Demir', 'Ceyda Arslan'];
+
+export const QUOTES = [
+  'Başlamak, bitirmenin yarısıdır.',
+  'Küçük adımlar büyük yolculuklar yaratır.',
+  'Bugün yapabileceğini yarına bırakma.',
+  'Disiplin, hedef ile başarı arasındaki köprüdür.',
+  'En iyi zaman şu an.'
+];
+
+export type SystemRole = 'ADMIN' | 'MEMBER' | 'VIEWER';
+
+// Parse a "MMM D" label (e.g. "May 29") to a Date in the given year.
+export const parseDateLabel = (label: string, year = 2026): Date | null => {
+  if (!label) return null;
+  const d = new Date(`${label} ${year}`);
+  return isNaN(d.getTime()) ? null : d;
 };
 
 export type MondayGroup = {

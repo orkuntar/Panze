@@ -93,6 +93,13 @@ button:active { transform: scale(0.96); }
 .stagger > *:nth-child(7) { animation-delay: 0.34s; }
 .stagger > *:nth-child(8) { animation-delay: 0.39s; }
 
+/* Viewer (read-only) board mode: disable inline editing controls */
+.board-readonly input,
+.board-readonly select,
+.board-readonly textarea {
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
